@@ -76,7 +76,8 @@ RUN xvfb-run sudo jasmine-headless-webkit -j ${SCRIPTS_DIR}/jasmine-empty.yml
 RUN git clone https://github.com/VizGrimoire/VizGrimoireJS.git
 RUN ln -s ${JSON_DIR} VizGrimoireJS/browser/data/json && \
     cd VizGrimoireJS && make
-
+# Use the last version of VizJS-lib
+RUN cp VizGrimoireJS-lib/vizgrimoire.min.js VizGrimoireJS/browser/lib/vizgrimoire.min.js
 # Hack to change organizations to companies for VizJS
 ADD orgs2companies.sh ${SCRIPTS_DIR}/orgs2companies.sh
 RUN JSON_DIR=${JSON_DIR} ${SCRIPTS_DIR}/orgs2companies.sh
