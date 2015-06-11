@@ -26,6 +26,8 @@ RUN apt-get update && \
         python-dateutil python-rpy2 \
         python-scipy python-sqlalchemy python-jsonpickle \
         p7zip \
+        npm nodejs-legacy \
+        ruby \
         && \
     apt-get clean && \
     find /var/lib/apt/lists -type f -delete
@@ -50,6 +52,25 @@ RUN sudo service mysql start && \
     cd ../vizGrimoireJS && \
     ln -s ../vizgrimoire . && ln -s ../grimoirelib_alch . && \
     ./report_tool.py -c ../testing/automator.conf -o ${JSON_DIR}
+
+# VizGrimoireJS-lib: install, including testing support
+RUN sudo npm install -g jshint uglifyjs
+RUN git clone https://github.com/VizGrimoire/VizGrimoireJS-lib.git
+RUN cd VizGrimoireJS-lib && make
+
+# Time to install jasmine-headless-webkit
+RUN sudo apt-get update && \
+    sudo apt-get -y install --no-install-recommends \
+    libqt4-dev qt4-qmake libqtwebkit-dev g++ \
+    xvfb
+RUN sudo gem install jasmine-headless-webkit
+# We need to fix two issues
+ADD specrunner.cpp ${SCRIPTS_DIR}/specrunner.cpp
+ADD command_line.rb ${SCRIPTS_DIR}/command_line.rb
+RUN sudo cp ${SCRIPTS_DIR}/specrunner.cpp /var/lib/gems/1.9.1/gems/jasmine-headless-webkit-0.8.4/ext/jasmine-webkit-specrunner/specrunner.cpp
+RUN sudo cp ${SCRIPTS_DIR}/command_line.rb /var/lib/gems/1.9.1/gems/jasmine-headless-webkit-0.8.4/lib/jasmine/headless/command_line.rb
+ADD jasmine-empty.yml ${SCRIPTS_DIR}/jasmine-empty.yml
+RUN xvfb-run sudo jasmine-headless-webkit -j ${SCRIPTS_DIR}/jasmine-empty.yml
 
 # VizGrimoireJS: install, create HTML and use the JSON from GrimoireLib
 RUN git clone https://github.com/VizGrimoire/VizGrimoireJS.git
