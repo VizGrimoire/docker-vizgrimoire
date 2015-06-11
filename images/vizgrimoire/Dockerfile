@@ -39,23 +39,23 @@ RUN apt-get update && apt-get install -qy mysql-server
 USER ${DEPLOY_USER}
 WORKDIR ${DEPLOY_USER_DIR}
 
-# VizGrimoireJS: install, create HTML and use the JSON from GrimoireLib
-# GrimoireLib: install, execute with test dbs and generate JSON data
-
-RUN git clone https://github.com/VizGrimoire/VizGrimoireJS.git
-RUN git clone https://github.com/VizGrimoire/GrimoireLib.git
-ENV JSON_DIR ${DEPLOY_USER_DIR}/VizGrimoireJS/browser/data/json
-
+# JSON data metrics shared between VizGrimoireJS and GrimoireLib
+ENV JSON_DIR ${DEPLOY_USER_DIR}/json
 RUN mkdir -p ${JSON_DIR}
 
+# GrimoireLib: install, execute with test dbs and generate JSON data
+RUN git clone https://github.com/VizGrimoire/GrimoireLib.git
 RUN sudo service mysql start && \
-    cd GrimoireLib/testing && ./recreate-test-dbs.sh
-
-RUN cd VizGrimoireJS && make && cd .. && \
-    sudo service mysql start && \
-    cd GrimoireLib/vizGrimoireJS && \
+    cd GrimoireLib/testing && ./recreate-test-dbs.sh && \
+    cd ../vizGrimoireJS && \
     ln -s ../vizgrimoire . && ln -s ../grimoirelib_alch . && \
     ./report_tool.py -c ../testing/automator.conf -o ${JSON_DIR}
 
+# VizGrimoireJS: install, create HTML and use the JSON from GrimoireLib
+RUN git clone https://github.com/VizGrimoire/VizGrimoireJS.git
+RUN ln -s ${JSON_DIR} VizGrimoireJS/browser/data/json && \
+    cd VizGrimoireJS && make
+
 USER root
-RUN ln -s ${DEPLOY_USER_DIR}/VizGrimoireJS/browser /var/www/html/vizgrimoire
+RUN mv /var/www/html /var/www/html.orig && \
+    ln -s ${DEPLOY_USER_DIR}/VizGrimoireJS/browser /var/www/html
