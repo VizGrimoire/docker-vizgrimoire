@@ -1,0 +1,6 @@
+vizgrimoire:
+    image: bitergia/vizgrimoire
+    volumes:
+        - ~/devel/GrimoireLib:/home/bitergia/GrimoireLib
+        - ~/devel/VizGrimoireJS-lib:/home/bitergia/VizGrimoireJS-lib
+        - ~/devel/VizGrimoireJS:/home/bitergia/VizGrimoireJS
