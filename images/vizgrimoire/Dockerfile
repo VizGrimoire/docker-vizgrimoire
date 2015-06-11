@@ -56,6 +56,10 @@ RUN git clone https://github.com/VizGrimoire/VizGrimoireJS.git
 RUN ln -s ${JSON_DIR} VizGrimoireJS/browser/data/json && \
     cd VizGrimoireJS && make
 
+# Hack to change organizations to companies for VizJS
+ADD orgs2companies.sh ${SCRIPTS_DIR}/orgs2companies.sh
+RUN JSON_DIR=${JSON_DIR} ${SCRIPTS_DIR}/orgs2companies.sh
+
 USER root
 RUN mv /var/www/html /var/www/html.orig && \
     ln -s ${DEPLOY_USER_DIR}/VizGrimoireJS/browser /var/www/html
